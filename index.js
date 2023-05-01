@@ -2,18 +2,28 @@ const redux = require('redux')
 const reduxLogger = require('redux-logger')
 
 const createStore = redux.legacy_createStore
+const bindActionCreators = redux.bindActionCreators
 const combineReducers = redux.combineReducers
 const applyMiddleware = redux.applyMiddleware
 const logger = reduxLogger.createLogger()
 
 const BUY_CAKE = 'BUY_CAKE'
 const BUY_ICECREAM = 'BUY_ICECREAM'
+const CAKE_RESTOCKED = 'CAKE_RESTOCKED'
 
 //Action creator
 function buyCake() {
     return {
         type: BUY_CAKE,
         info: 'First Redux Action',
+        payload: 1,
+    }
+}
+
+function restockCake(qty = 1) {
+    return {
+        type: CAKE_RESTOCKED,
+        payload: qty,
     }
 }
 
@@ -63,6 +73,10 @@ const cakeReducer = (state = initialCakeState, action) => {
             ...state,
             numOfCakes: state.numOfCakes - 1
         }
+        case CAKE_RESTOCKED: return {
+            ...state,
+            numOfCakes: state.numOfCakes + action.payload
+        }
         default: return state
     }
 }
@@ -88,9 +102,16 @@ const store = createStore(rootReducer, applyMiddleware(logger));
 
 console.log('Initial state', store.getState())
 const unsubscribe = store.subscribe(() => {})
-store.dispatch(buyCake())
-store.dispatch(buyCake())
-store.dispatch(buyCake())
-store.dispatch(buyIceCream())
-store.dispatch(buyIceCream())
+
+const actions = bindActionCreators({ buyCake, restockCake}, store.dispatch)
+actions.buyCake()
+actions.buyCake()
+actions.buyCake()
+actions.restockCake(2)
+// store.dispatch(buyCake())
+// store.dispatch(buyCake())
+// store.dispatch(buyCake())
+// store.dispatch(restockCake(2))
+// store.dispatch(buyIceCream())
+// store.dispatch(buyIceCream())
 unsubscribe()
